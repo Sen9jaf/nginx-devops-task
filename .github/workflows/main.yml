@@ -10,38 +10,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Клонуємо репозиторій
+      # 1️⃣ Клонуємо репозиторій
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Логін в GitHub Container Registry
+      # 2️⃣ Логін у GitHub Container Registry (GHCR)
       - name: Log in to GHCR
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_PAT }}
 
-      # 3. Збірка Docker образу
+      # 3️⃣ Build Docker image з тегом commit SHA
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/nginx-custom:latest .
+          IMAGE_TAG=ghcr.io/sen9jaf/nginx-custom:${GITHUB_SHA::7}
+          docker build -t $IMAGE_TAG .
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-      # 4. Пуш Docker образу в GHCR
+      # 4️⃣ Push Docker image
       - name: Push Docker image
-        run: |
-          docker push ghcr.io/${{ github.repository_owner }}/nginx-custom:latest
+        run: docker push $IMAGE_TAG
 
-      # 5. Встановлення Helm
+      # 5️⃣ Встановлення Helm
       - name: Setup Helm
         uses: azure/setup-helm@v3
 
-      # 6. Деплой через Helm у Kubernetes
+      # 6️⃣ Деплой через Helm у Kubernetes
       - name: Deploy with Helm
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
         run: |
           helm upgrade --install nginx-release ./nginx-chart \
-            --set image.repository=ghcr.io/${{ github.repository_owner }}/nginx-custom \
-            --set image.tag=latest
+            --set image.repository=ghcr.io/sen9jaf/nginx-custom \
+            --set image.tag=${GITHUB_SHA::7}
 
