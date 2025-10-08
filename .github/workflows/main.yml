@@ -44,7 +44,7 @@ jobs:
       # 7️⃣ Деплой через Helm
       - name: Deploy with Helm
         run: |
-          helm upgrade --install nginx-release ./nginx-chart \
-            --set image.repository=nginx-custom \
+          helm upgrade --install nginx-release ./nginx-custom \
+            -f ./nginx-custom/values.yaml \
             --set image.tag=${GITHUB_SHA::7}
 
