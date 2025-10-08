@@ -1,0 +1,47 @@
+name: CI/CD NGINX DevOps Task
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Клонуємо репозиторій
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Логін в GitHub Container Registry
+      - name: Log in to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 3. Збірка Docker образу
+      - name: Build Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/nginx-custom:latest .
+
+      # 4. Пуш Docker образу в GHCR
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/nginx-custom:latest
+
+      # 5. Встановлення Helm
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+
+      # 6. Деплой через Helm у Kubernetes
+      - name: Deploy with Helm
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          helm upgrade --install nginx-release ./nginx-chart \
+            --set image.repository=ghcr.io/${{ github.repository_owner }}/nginx-custom \
+            --set image.tag=latest
+
