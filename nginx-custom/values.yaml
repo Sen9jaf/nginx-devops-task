@@ -5,7 +5,7 @@ replicaCount: 2
 
 # Container image
 image:
-  repository: ghcr.io/sen9jaf/nginx-custom   # або 'nginx-custom' для локального Kind/Minikube
+  repository: nginx-custom
   tag: latest
   pullPolicy: IfNotPresent
 
