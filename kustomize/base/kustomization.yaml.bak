@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Базовий Helm-чарт
+helmCharts:
+  - name: nginx-chart
+    releaseName: nginx-release
+    namespace: default
+    valuesFile: ../../nginx-custom/values.yaml
+    chartDir: ../../nginx-custom
+

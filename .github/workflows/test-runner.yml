@@ -1,0 +1,21 @@
+name: Test Self-Hosted Runner
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-runner:
+    runs-on: [self-hosted, Linux, X64]  # Обмежуємо конкретно на твій runner
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test Nginx
+        run: |
+          echo "Checking Nginx status"
+          curl -I http://localhost
+

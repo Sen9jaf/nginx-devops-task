@@ -1,0 +1,50 @@
+name: CI/CD NGINX DevOps Task (Kind)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Клонуємо репозиторій
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Встановлюємо Helm
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+
+      # 3️⃣ Встановлюємо Kind
+      - name: Install Kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.25.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+          kind version
+
+      # 4️⃣ Створюємо локальний Kind кластер
+      - name: Create Kind cluster
+        run: kind create cluster --name nginx-devops
+
+      # 5️⃣ Build Docker image з тегом коміту
+      - name: Build Docker image
+        run: |
+          IMAGE_TAG=nginx-custom:${GITHUB_SHA::7}
+          docker build -t $IMAGE_TAG .
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      # 6️⃣ Завантажуємо Docker образ у Kind
+      - name: Load Docker image into Kind
+        run: kind load docker-image $IMAGE_TAG --name nginx-devops
+
+      # 7️⃣ Деплой через Helm
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install nginx-release ./nginx-custom \
+            -f ./nginx-custom/values.yaml \
+            --set image.tag=${GITHUB_SHA::7}
+

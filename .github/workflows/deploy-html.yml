@@ -1,0 +1,29 @@
+name: deploy-html
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    name: Deploy updated HTML to EC2
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Update NGINX index.html
+        run: |
+          echo "===== Copying new index.html to /var/www/html ====="
+          cp -f index.html /var/www/html/index.html
+          chown www-data:www-data /var/www/html/index.html
+          echo "===== Restarting NGINX ====="
+          sudo systemctl restart nginx
+          echo "===== Done ====="
+
+      - name: Verify deployed content
+        run: |
+          echo "===== Checking deployed page ====="
+          curl -s http://localhost | head -n 5
+

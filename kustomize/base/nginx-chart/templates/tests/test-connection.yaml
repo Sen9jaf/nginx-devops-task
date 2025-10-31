@@ -1,0 +1,21 @@
+---
+# Source: nginx-chart/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "nginx-release-nginx-chart-test-connection"
+  labels:
+    helm.sh/chart: nginx-chart-0.1.0
+    app.kubernetes.io/name: nginx-chart
+    app.kubernetes.io/instance: nginx-release
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['nginx-release-nginx-chart:80']
+  restartPolicy: Never

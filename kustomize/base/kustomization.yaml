@@ -1,0 +1,6 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - all.yaml  # сюди ми кладемо усі ресурси, які Helm згенерував (Deployment, Service, ServiceAccount тощо)
+
