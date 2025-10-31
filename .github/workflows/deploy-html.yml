@@ -16,8 +16,9 @@ jobs:
       - name: Update NGINX index.html
         run: |
           echo "===== Copying new index.html to /var/www/html ====="
-          cp -f index.html /var/www/html/index.html
-          chown www-data:www-data /var/www/html/index.html
+          sudo cp -f index.html /var/www/html/index.html
+          sudo chown www-data:www-data /var/www/html/index.html
+          sudo chmod 644 /var/www/html/index.html
           echo "===== Restarting NGINX ====="
           sudo systemctl restart nginx
           echo "===== Done ====="
@@ -25,5 +26,5 @@ jobs:
       - name: Verify deployed content
         run: |
           echo "===== Checking deployed page ====="
-          curl -s http://localhost | head -n 5
+          curl -s http://localhost | head -n 10
 
